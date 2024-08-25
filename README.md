@@ -1,114 +1,56 @@
-markdown
-# EDA Visualizations for Image Recognition (Conv Filter Edition)
+# 📊 EDA Visualizations for Image Recognition (Conv Filter Edition)
 
-Welcome to the EDA Visualizations for Image Recognition project! This repository contains code and resources for exploring and visualizing convolutional filters in image recognition models using PyTorch. 
+## Overview
 
-## Table of Contents
-- [Dependencies and Imports](#dependencies-and-imports)
-- [Config and Logging](#config-and-logging)
-- [Utils](#utils)
-- [Seeding](#seeding)
-- [Transforms Params](#transforms-params)
-- [Visualizations](#visualizations)
-- [Convolution Layers](#convolution-layers)
-- [Feature Extractor using PyTorch's native Feature Extraction Module](#feature-extractor-using-pytorchs-native-feature-extraction-module)
-- [Visualizing VGG16 and ResNet18](#visualizing-vgg16-and-resnet18)
-- [Comparison with Randomly Initialized Weights](#comparison-with-randomly-initialized-weights)
-- [References](#references)
+This project aims to provide insightful exploratory data analysis (EDA) for image recognition tasks, specifically focusing on visualizing convolutional filters in deep learning models. With visualizations of feature maps and convolution layers, we can gain a better understanding of how these models process images.
 
-## Dependencies and Imports
-To get started, make sure you have the necessary dependencies installed. You can do this by running the following commands:
+---
 
-bash
-pip install -q timm
-pip install -q torch==1.10.0 torchvision==0.11.1 torchaudio===0.10.0
+## 🛠️ Dependencies
 
+To run this project, you'll need the following Python packages:
 
-Then, import the required libraries in your Python environment:
+- **PyTorch**: Version 1.10.0
+- **Torchvision**: Version 0.11.1
+- **Torchaudio**: Version 0.10.0
+- **Timm**
+- **NumPy**
+- **Pandas**
+- **Matplotlib**
+- **OpenCV**
+- **Pillow**
 
-python
-from typing import Dict
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import timm
-import torch
-import torchvision
-from torchvision.models.feature_extraction import create_feature_extractor, get_graph_node_names
+You can install the required packages using:
 
+```bash
+!pip install -q timm
+!pip install -q torch==1.10.0 torchvision==0.11.1 torchaudio===0.10.0
+```
 
-## Config and Logging
-This section initializes logging to keep track of the operations performed during the execution of the code.
+---
 
-python
-import logging
-from logging import INFO, FileHandler, Formatter, StreamHandler, getLogger
+## 📚 Config and Logging
 
+A logging mechanism is implemented to facilitate debugging and track the flow of the program. Here's how to initialize the logger:
+
+```python
 def init_logger(log_file: str = "info.log") -> logging.Logger:
-logger = getLogger(__name__)
-logger.setLevel(INFO)
-stream_handler = StreamHandler()
-stream_handler.setFormatter(Formatter("%(asctime)s: %(message)s", "%Y-%m-%d %H:%M:%S"))
-file_handler = FileHandler(filename=log_file)
-file_handler.setFormatter(Formatter("%(asctime)s: %(message)s", "%Y-%m-%d %H:%M:%S"))
-logger.addHandler(stream_handler)
-logger.addHandler(file_handler)
-return logger
+    ...
+```
 
-logger = init_logger()
+---
 
+## 🎨 Visualization Utilities
 
-## Utils
-Utility functions to help with visualizations and data processing.
+Several helper functions are provided for visualizing images and feature maps:
 
-python
-def plot_multiple_img(img_matrix_list, title_list, ncols, main_title=""):
-fig, myaxes = plt.subplots(figsize=(20, 15), nrows=ceil(len(img_matrix_list) / ncols), ncols=ncols, squeeze=False)
-fig.suptitle(main_title, fontsize=30)
-fig.subplots_adjust(wspace=0.3, hspace=0.3)
-for i, (img, title) in enumerate(zip(img_matrix_list, title_list)):
-myaxes[i // ncols][i % ncols].imshow(img)
-myaxes[i // ncols][i % ncols].set_title(title, fontsize=15)
-plt.show()
+- **`plot_multiple_img`**: Displays multiple images in a grid format.
+- **`conv_horizontal`**: Visualizes the horizontal convolution of an image.
+- **`conv_vertical`**: Visualizes the vertical convolution of an image.
 
+### Example of Plotting Images
 
-## Seeding
-To ensure reproducibility, we can set a random seed for all random number generators.
-
-python
-def seed_all(seed: int = 1992) -> None:
-print(f"Using Seed Number {seed}")
-os.environ["PYTHONHASHSEED"] = str(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed_all(seed)
-np.random.seed(seed)
-random.seed(seed)
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = True
-
-
-## Transforms Params
-Define the parameters for image transformations.
-
-python
-mean: List[float] = [0.485, 0.456, 0.406]
-std: List[float] = [0.229, 0.224, 0.225]
-image_size: int = 224
-
-transform = torchvision.transforms.Compose([
-torchvision.transforms.Resize((image_size, image_size)),
-torchvision.transforms.ToTensor(),
-torchvision.transforms.Normalize(mean=mean, std=std),
-])
-
-
-## Visualizations
-Visualize images and their features.
-
-python
-cat_p = "../input/petfinder-pawpularity-score/train/0042bc5bada6d1cf8951f8f9f0d399fa.jpg"
-dog_p = "../input/petfinder-pawpularity-score/train/86a71a412f662212fe8dcd40fdaee8e6.jpg"
-
+```python
 plt.figure(figsize=(10, 10))
 plt.subplot(1, 2, 1)
 cat = PIL.Image.open(cat_p)
@@ -119,54 +61,96 @@ dog = PIL.Image.open(dog_p)
 plt.imshow(dog)
 plt.title("Dog")
 plt.show()
-
-
-## Convolution Layers
-Explore convolution layers and their effects on images.
-
-python
-def conv_horizontal(image: np.ndarray) -> None:
-# Function implementation...
-
-def conv_vertical(image: np.ndarray) -> None:
-# Function implementation...
-
-
-## Feature Extractor using PyTorch's native Feature Extraction Module
-Utilize PyTorch's feature extraction capabilities to visualize convolutional layers.
-
-python
-def get_conv_layers(model: torchvision.models) -> Dict[str, str]:
-# Function implementation...
-
-def get_feature_maps(model_name: str, image: torch.Tensor, reduction: str = "mean", pretrained: bool = True) -> Union[Dict[str, torch.Tensor], List[torch.Tensor], List[str]]:
-# Function implementation...
-
-
-## Visualizing VGG16 and ResNet18
-Visualize feature maps from popular models like VGG16 and ResNet18.
-
-python
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-import torchvision.models as models
-
-vgg16_pretrained_true = models.vgg16(pretrained=True).to(device)
-resnet18_pretrained_true = models.resnet18(pretrained=True).to(device)
-
-
-## Comparison with Randomly Initialized Weights
-Compare the feature maps of pretrained models with those initialized randomly.
-
-python
-# Code to visualize and compare feature maps...
-
-
-## References
-- PyTorch Feature Extraction Documentation
-- Visualizing Feature Maps using PyTorch
-- FX Feature Extraction in Torchvision
-- Kaggle Plant Pathology EDA Models
+```
 
 ---
 
-Feel free to explore the code and contribute to the project! Happy coding! 😊
+## 🔍 Convolution Layers
+
+### Understanding Convolution
+
+Convolution involves a kernel (a 2D matrix) that moves over the entire image, calculating dot products with each window. Below is a GIF illustrating convolution in action:
+
+![Convolution GIF](https://i.imgur.com/wYUaqR3.gif)
+
+---
+
+## 🖼️ Feature Map Visualization
+
+### Step 1: Initialize the Models
+
+In this project, we leverage **PyTorch's** `feature_extraction` module to visualize feature maps from various pretrained models:
+
+```python
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+vgg16_pretrained = models.vgg16(pretrained=True).to(device)
+resnet18_pretrained = models.resnet18(pretrained=True).to(device)
+```
+
+### Step 2: Transform the Tensors
+
+We prepare the input images by resizing and normalizing them:
+
+```python
+transform = torchvision.transforms.Compose([
+    torchvision.transforms.Resize((224, 224)),
+    torchvision.transforms.ToTensor(),
+    torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+```
+
+### Step 3: Plotting the Feature Maps
+
+We visualize the feature maps using a custom plotting function:
+
+```python
+def plot_feature_maps(processed_feature_maps, feature_map_names, nrows, title=None):
+    ...
+```
+
+### Example Output
+
+- **VGG16 Pretrained Feature Maps**
+- **ResNet18 Pretrained Feature Maps**
+
+---
+
+## ⏳ Comparison with Randomly Initialized Weights
+
+We also visualize the differences in feature maps when using pretrained weights versus randomly initialized weights.
+
+```python
+_, vgg16_processed_feature_maps, vgg16_feature_map_names = get_feature_maps(
+    model_name="vgg16", image=cat_tensor, reduction="mean", pretrained=False
+)
+```
+
+### Example Outputs
+
+- **VGG16 NOT Pretrained Feature Maps**
+- **ResNet18 NOT Pretrained Feature Maps**
+
+---
+
+## 📖 References
+
+- [PyTorch Feature Extraction Documentation](https://pytorch.org/vision/stable/feature_extraction.html)
+- [Visualizing Feature Maps Using PyTorch](https://ravivaishnav20.medium.com/visualizing-feature-maps-using-pytorch)
+- [PyTorch Blog on FX Feature Extraction](https://pytorch.org/blog/FX-feature-extraction-torchvision/)
+- [Plant Pathology EDA Models on Kaggle](https://www.kaggle.com/tarunpaparaju/plant-pathology-2020-eda-models)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to submit a pull request or open an issue.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+```
+
+### Customization Tips:
+- Update paths and references to match your project.
+- You may want to include additional sections like "Installation Instructions" or "Usage Examples" based on your audience's needs.
+- Add any relevant badges (e.g., build status, license) at the top for better visibility.
